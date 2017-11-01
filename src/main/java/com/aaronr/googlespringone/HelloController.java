@@ -4,7 +4,7 @@ package com.aaronr.googlespringone;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.CharEncoding;
+import org.apache.commons.lang.CharEncoding;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
