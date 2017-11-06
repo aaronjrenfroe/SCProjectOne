@@ -24,13 +24,16 @@ import java.util.List;
 @RestController
 public class HelloController {
 
+    private String fileLocation = "./";
+    private String fileName = "inventory.txt";
+
 
     @RequestMapping(value = "/addVehicle", method = RequestMethod.POST)
     public Vehicle addVehicle(@RequestBody Vehicle vehicle) throws IOException {
         if (vehicle.getMakeModel() != null) {
             ObjectMapper mapper = new ObjectMapper();
             String json = mapper.writeValueAsString(vehicle);
-            FileUtils.writeStringToFile(new File("./vehicles.txt"), json + "\n", true);
+            FileUtils.writeStringToFile(new File(fileLocation + fileName), json + "\n", true);
             return vehicle;
         }
         return null;
@@ -42,7 +45,7 @@ public class HelloController {
         // ObjectMapper provides functionality for reading and writing json
         ObjectMapper mapper = new ObjectMapper();
 
-        List<String> jsonStrings = FileUtils.readLines(new File("./vehicles.txt"), CharEncoding.UTF_8);
+        List<String> jsonStrings = FileUtils.readLines(new File(fileLocation + fileName), CharEncoding.UTF_8);
         for (String json : jsonStrings) {
             // deserialize JSON to vehicle Object
             Vehicle vehicle = mapper.readValue(json, Vehicle.class);
@@ -76,7 +79,7 @@ public class HelloController {
     private Vehicle updateOrDelete(Vehicle vehicle, boolean update) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
-        List<String> jsonStrings = FileUtils.readLines(new File("./vehicles.txt"), CharEncoding.UTF_8);
+        List<String> jsonStrings = FileUtils.readLines(new File(fileLocation + fileName), CharEncoding.UTF_8);
         if (jsonStrings.size() > 0) {
 
             for (int i = 0; i < jsonStrings.size(); i++) {
@@ -94,7 +97,7 @@ public class HelloController {
                     for (String jsonTemp : jsonStrings) {
                         sb.append(jsonTemp + "\n");
                     }
-                    FileUtils.writeStringToFile(new File("./vehicles.txt"), sb.toString(), false);
+                    FileUtils.writeStringToFile(new File(fileLocation + fileName), sb.toString(), false);
                     return vehicle;
                 }
             }
