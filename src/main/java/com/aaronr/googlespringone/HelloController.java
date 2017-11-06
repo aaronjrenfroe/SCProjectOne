@@ -109,7 +109,7 @@ public class HelloController {
     @RequestMapping(value = "/getLatestVehicle", method = RequestMethod.GET)
     public List<Vehicle> getLatestVehicle() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        List<String> jsonStrings = FileUtils.readLines(new File("./vehicles.txt"), CharEncoding.UTF_8);
+        List<String> jsonStrings = FileUtils.readLines(new File(fileLocation + fileName), CharEncoding.UTF_8);
         List<Vehicle> vList = new ArrayList();
         if (jsonStrings.size() > 0) {
             int max = jsonStrings.size();
