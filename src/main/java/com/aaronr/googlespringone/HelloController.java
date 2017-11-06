@@ -3,13 +3,20 @@ package com.aaronr.googlespringone;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.sun.deploy.net.HttpResponse;
+import jdk.nashorn.internal.objects.NativeJava;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.CharEncoding;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -19,93 +26,99 @@ import java.nio.charset.StandardCharsets;
 @RestController
 public class HelloController {
 
-//    @RequestMapping("/greeting")
-//    public Greeting greeting(@RequestParam(value="name", defaultValue = "World") String name){
-//        return new Greeting(27, name);
-//    }
 
-//    @RequestMapping(value = "/createGreeting", method = RequestMethod.POST)
-//    public Greeting newGreeting(@RequestParam(value="content", defaultValue = "World") String name){
-//        return new Greeting(19, name);
-//    }
-
-
-//    @RequestMapping(value = "/createGreeting", method = RequestMethod.POST)
-//    public Greeting how(@RequestBody String content){
-//        return new Greeting(19, content);
-//    }
-
-
-    @RequestMapping(value = "/createGreeting", method = RequestMethod.POST)
-    public Greeting how(@RequestBody String data) throws IOException{
-        ObjectMapper mapper = new ObjectMapper();
-        Greeting greeting = mapper.readValue(data, Greeting.class);
-        mapper.writeValue(new File("./message.txt"), greeting);
-        return greeting;
-    }
-
-    @RequestMapping(value="/greeting", method = RequestMethod.GET)
-    public Greeting greeting()throws IOException{
-
-        // ObjectMapper provides functionality for reading and writing json
-        ObjectMapper mapper = new ObjectMapper();
-
-        String message = FileUtils.readFileToString(new File("./message.txt"), CharEncoding.UTF_8);
-        // deserialize JSON to greeting Object
-        Greeting greeting = mapper.readValue(message, Greeting.class);
-        return greeting;
-
-    }
-
-    @RequestMapping(value="/updateGreeting", method = RequestMethod.PUT)
-    public Greeting updateGreeting(@RequestBody String newMessage)throws IOException{
-        // ObjectMapper provides functionality for reading and writing json
-        ObjectMapper mapper = new ObjectMapper();
-        String message = FileUtils.readFileToString(new File("./message.txt"), CharEncoding.UTF_8);
-        // deserialize JSON to greeting Object
-        Greeting greeting = mapper.readValue(message, Greeting.class);
-
-        // update message
-        greeting.setContent(newMessage);
-        //serialize greeting to object JSON
-        mapper.writeValue(new File("./message.txt"), greeting);
-        return greeting;
-    }
-
-    @RequestMapping(value="/deleteGreeting", method = RequestMethod.DELETE)
-    public void deleteGreeting(@RequestBody int id)throws IOException{
-
-        // ObjectMapper provides functionality for reading and writing json
-        ObjectMapper mapper = new ObjectMapper();
-
-        String message = FileUtils.readFileToString(new File("./message.txt"), StandardCharsets.UTF_8.name());
-
-        // deserialize JSON to greeting Object
-        Greeting greeting = mapper.readValue(message, Greeting.class);
-        if(greeting.getId() == id) {
-            FileUtils.writeStringToFile(new File("./message.txt"),"", StandardCharsets.UTF_8.name());
+    @RequestMapping(value = "/addVehicle", method = RequestMethod.POST)
+    public Vehicle addVehicle(@RequestBody Vehicle vehicle) throws IOException {
+        if (vehicle.getMakeModel() != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            String json = mapper.writeValueAsString(vehicle);
+            FileUtils.writeStringToFile(new File("./vehicles.txt"), json + "\n", true);
+            return vehicle;
         }
+        return null;
     }
 
-    //    @RequestMapping(value = "/somegreeting", method = RequestMethod.POST)
-//    public Greeting someGreeting(@RequestBody Greeting greeting){
-//        return greeting;
-//    }
-//
-//
-//    @RequestMapping(value = "/gethighestgreeting", method = RequestMethod.POST)
-//    public Greeting getHighestGreeting(@RequestBody List<Greeting> greetings){
-//        if(greetings.size() == 0){
-//            return null;
-//        }
-//
-//        Greeting highest = greetings.get(0);
-//
-//        for (Greeting greeting: greetings) {
-//            if(highest.getId() < greeting.getId()){
-//                highest = greeting;
-//            }
-//        }
-//        return highest;
-//    }
+    @RequestMapping(value = "/getVehicle/{id}", method = RequestMethod.GET)
+    public Vehicle getVehicle(@PathVariable("id") int id) throws IOException {
+
+        // ObjectMapper provides functionality for reading and writing json
+        ObjectMapper mapper = new ObjectMapper();
+
+        List<String> jsonStrings = FileUtils.readLines(new File("./vehicles.txt"), CharEncoding.UTF_8);
+        for (String json : jsonStrings) {
+            // deserialize JSON to vehicle Object
+            Vehicle vehicle = mapper.readValue(json, Vehicle.class);
+            if (vehicle.getId() == id) {
+                return vehicle;
+            }
+        }
+        return null;
+
+    }
+
+    @RequestMapping(value = "/updateVehicle", method = RequestMethod.PUT)
+    public Vehicle updateVehicle(@RequestBody Vehicle vehicle) throws IOException {
+
+        Vehicle v = updateOrDelete(vehicle, true);
+        return v;
+    }
+
+    @RequestMapping(value = "/deleteVehicle/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<String> deleteVehicle(@PathVariable("id") int id) throws IOException {
+        // ObjectMapper provides functionality for reading and writing json
+        HttpHeaders responseHeaders = new HttpHeaders();
+
+        Vehicle v = updateOrDelete(new Vehicle(id, "", 0, 0.0), false);
+        if (v!=null){
+            return new ResponseEntity("Deleted Vehicle With ID: " + id,responseHeaders,HttpStatus.ACCEPTED);
+        }
+        return new ResponseEntity("ID Not Found:" + id,responseHeaders,HttpStatus.ACCEPTED);
+    }
+
+    private Vehicle updateOrDelete(Vehicle vehicle, boolean update) throws IOException {
+
+        ObjectMapper mapper = new ObjectMapper();
+        List<String> jsonStrings = FileUtils.readLines(new File("./vehicles.txt"), CharEncoding.UTF_8);
+        if (jsonStrings.size() > 0) {
+
+            for (int i = 0; i < jsonStrings.size(); i++) {
+
+                String json = jsonStrings.get(i);
+                // deserialize JSON to vehicle Object
+                Vehicle curVehicle = mapper.readValue(json, Vehicle.class);
+                if (curVehicle.getId() == vehicle.getId()) {
+                    jsonStrings.remove(i);
+                    if (update) {
+                        String newJson = mapper.writeValueAsString(vehicle);
+                        jsonStrings.add(i, newJson);
+                    }
+                    StringBuilder sb = new StringBuilder();
+                    for (String jsonTemp : jsonStrings) {
+                        sb.append(jsonTemp + "\n");
+                    }
+                    FileUtils.writeStringToFile(new File("./vehicles.txt"), sb.toString(), false);
+                    return vehicle;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @RequestMapping(value = "/getLatestVehicle", method = RequestMethod.GET)
+    public List<Vehicle> getLatestVehicle() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        List<String> jsonStrings = FileUtils.readLines(new File("./vehicles.txt"), CharEncoding.UTF_8);
+        List<Vehicle> vList = new ArrayList();
+        if (jsonStrings.size() > 0) {
+            int max = jsonStrings.size();
+            int min = Math.max(0,max - 10);
+
+            for (String json : jsonStrings.subList(min,max)) {
+                vList.add(mapper.readValue(json, Vehicle.class));
+            }
+        }
+        return vList;
+    }
+
 }
