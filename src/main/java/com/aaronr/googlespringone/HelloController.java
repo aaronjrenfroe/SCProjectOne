@@ -3,8 +3,6 @@ package com.aaronr.googlespringone;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.sun.deploy.net.HttpResponse;
-import jdk.nashorn.internal.objects.NativeJava;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.CharEncoding;
 import org.springframework.http.HttpHeaders;
@@ -14,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+
 import java.util.ArrayList;
 import java.util.List;
 

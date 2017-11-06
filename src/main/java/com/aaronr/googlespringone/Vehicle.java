@@ -1,6 +1,5 @@
 package com.aaronr.googlespringone;
 
-import javax.sql.rowset.serial.SerialArray;
 import java.io.Serializable;
 
 /**
