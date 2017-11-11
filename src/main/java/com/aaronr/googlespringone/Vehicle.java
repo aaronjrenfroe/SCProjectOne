@@ -10,27 +10,27 @@ public class Vehicle implements Serializable{
 
     private String makeModel;
     private int year;
-    private double msrp;
+    private double retailPrice;
     private int id;
 
     public Vehicle(){
 
     }
 
-    public Vehicle(int id, String makeModel, int year, double msrp){
+    public Vehicle(int id, String makeModel, int year, double retailPrice){
         this.id = id;
         this.makeModel = makeModel;
         this.year = year;
-        this.msrp = msrp;
+        this.retailPrice = retailPrice;
 
     }
 
-    public double getMsrp() {
-        return msrp;
+    public double getRetailPrice() {
+        return retailPrice;
     }
 
-    public void setMsrp(double msrp) {
-        this.msrp = msrp;
+    public void setRetailPrice(double retailPrice) {
+        this.retailPrice = retailPrice;
     }
 
 
@@ -56,5 +56,19 @@ public class Vehicle implements Serializable{
 
     public void setYear(int year) {
         this.year = year;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj.getClass() == Vehicle.class){
+            Vehicle v = (Vehicle) obj;
+            return v.id == id & v.makeModel.equals(makeModel) & v.retailPrice == retailPrice & v.year == year;
+        }
+        return false;
     }
 }
