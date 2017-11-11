@@ -39,6 +39,10 @@ public class MyTask {
 
         int id = (int) (Math.random()*100);
         String url = "http://localhost:8080/getVehicle/" + id;
+        Vehicle v = rT.getForEntity(url, Vehicle.class).getBody();
+        if(v != null){
+            System.out.println("Retreaved Vehicle: " + v);
+        }
     }
 
     @Scheduled(cron = "0 0 0 * * *")
